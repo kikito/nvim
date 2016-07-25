@@ -167,10 +167,14 @@ nnoremap <leader>h <C-w>s
 set splitbelow splitright
 
 " Move between splits with leader-direction instead of c-w direction
-nnoremap <C-J> <C-W>J
-nnoremap <C-K> <C-W>K
-nnoremap <C-L> <C-W>L
-nnoremap <C-H> <C-W>H
+nnoremap <C-j> <C-W>j
+nnoremap <C-k> <C-W>k
+nnoremap <C-l> <C-W>l
+nnoremap <C-h> <C-W>h
+nnoremap <C-J> <C-W>j
+nnoremap <C-K> <C-W>k
+nnoremap <C-L> <C-W>l
+nnoremap <C-H> <C-W>h
 
 " Do not overwrite the clipboard when deleting
 nnoremap d "_d
