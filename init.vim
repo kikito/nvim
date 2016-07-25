@@ -32,6 +32,13 @@ set background=dark
 set bg=dark
 " }}}
 
+" {{{ Neomake options
+:highlight NeomakeSign guifg=Yellow guibg=#dc322f gui=bold
+let g:neomake_warning_sign={'text': '⚠', 'texthl': 'NeomakeSign'}
+let g:neomake_error_sign={'text': '✖', 'texthl': 'NeomakeSign'}
+let g:neomake_open_list = 2
+" }}}
+
 " {{{ Misc UI settings
 set encoding=utf-8
 scriptencoding utf-8
@@ -308,8 +315,8 @@ if has("autocmd")
   augroup Neomake
     autocmd!
 
-    au BufWritePost * Neomake
-    au BufReadPost  * Neomake
+    autocmd BufWritePost * Neomake
+    autocmd BufReadPost  * Neomake
 
   augroup end
 
