@@ -8,6 +8,8 @@ call plug#begin('~/.config/nvim/plugins')
   Plug 'tpope/vim-vinegar'
   Plug 'tpope/vim-surround'
   Plug 'ctrlpvim/ctrlp.vim'
+  Plug 'jiangmiao/auto-pairs'
+  Plug 'alvan/vim-closetag'
 
   function! DoRemote(arg)
     UpdateRemotePlugins
@@ -120,6 +122,10 @@ endif
 
 " {{{ deoplete options
 let g:deoplete#enable_at_startup = 1
+" }}}
+
+" {{{ vim-closetag options
+let g:closetag_filenames = "*.html,*.html.erb"
 " }}}
 
 " {{{ Key Settings
