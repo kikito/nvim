@@ -159,6 +159,10 @@ nnoremap <C-K> <C-W>K
 nnoremap <C-L> <C-W>L
 nnoremap <C-H> <C-W>H
 
+" Do not overwrite the clipboard when deleting
+nnoremap d "_d
+vnoremap d "_d
+
 " remap space bar to search
 :nmap <Space> /
 
