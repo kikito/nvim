@@ -10,6 +10,7 @@ call plug#begin('~/.config/nvim/plugins')
   Plug 'ctrlpvim/ctrlp.vim'
   Plug 'jiangmiao/auto-pairs'
   Plug 'alvan/vim-closetag'
+  Plug 'vim-ruby/vim-ruby'
 
   function! DoRemote(arg)
     UpdateRemotePlugins
@@ -60,6 +61,10 @@ set clipboard=unnamed
 
 " Add some space around the cursor when moving it near the borders of the screen
 set sidescrolloff=1
+
+" Redraw the screen a bit less (helps when editing ruby files)
+set lazyredraw
+
 " }}}
 
 
@@ -189,7 +194,6 @@ vnoremap d "_d
 " }}}
 
 " {{{ Folding settings
-set foldmethod=syntax " Use syntax-provided folding when available
 set foldlevel=99      " Folds are open by default
 set foldlevelstart=99 " Folds are open by default (new way)
 " }}}
