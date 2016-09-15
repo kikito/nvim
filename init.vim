@@ -23,7 +23,6 @@ call plug#end()
 " {{{ colorscheme/style options
 syntax enable
 set termguicolors " Enables truecolor in neovim >= 0.1.5
-set synmaxcol=100
 set number        " Displays line numbers
 set novisualbell
 set errorbells
