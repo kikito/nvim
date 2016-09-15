@@ -306,6 +306,14 @@ if has("autocmd")
 endif
 " }}}
 
+" {{{ Deoplete config
+let g:deoplete#enable_at_startup = 1
+
+" Use tab instead of the default deoplete mapping
+inoremap <expr><tab> pumvisible() ? "\<c-n>" : "\<tab>"
+
+" }}}
+
 " {{{ FZF config
 
 " Show FZF when pressing ctrl-p
