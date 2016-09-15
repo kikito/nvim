@@ -5,11 +5,19 @@ This is my custom neovim installation. I've tested it on a Mac with OSX
 ## Installation
 
 Prerequisite: install python3 with the neovim client for the python-reliant
-plugins to work.
+plugins (eg deoplete) to work.
 
 ```
 brew install python3
 pip3 install neovim
+```
+
+Prerequisite: install FZF and The Silver Searcher to make the fuzzy search and
+global search (:G) work:
+```
+brew install fzf
+brew install the_silver_searcher
+
 ```
 
 Prerequisite: Fix OSX settings for the terminal regarding Control-H

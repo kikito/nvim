@@ -7,10 +7,11 @@ call plug#begin('~/.config/nvim/plugins')
   Plug 'vim-airline/vim-airline-themes'
   Plug 'tpope/vim-vinegar'
   Plug 'tpope/vim-surround'
-  Plug 'ctrlpvim/ctrlp.vim'
   Plug 'jiangmiao/auto-pairs'
   Plug 'alvan/vim-closetag'
   Plug 'vim-ruby/vim-ruby'
+  Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+  Plug 'junegunn/fzf.vim'
 
   function! DoRemote(arg)
     UpdateRemotePlugins
@@ -95,39 +96,6 @@ let g:airline_mode_map = {
   \ }
 " By default vim only shows the status line after a split. Show it always
 set laststatus=2
-" }}}
-
-" {{{ ctrlp options
-let g:ctrlp_working_path_mode = 2
-let g:ctrlp_custom_ignore = {
-    \ 'dir':  '\.git$\|\.hg$\|\.svn$',
-    \ 'file': '\.exe$\|\.so$\|\.dll$' }
-" Set delay to prevent extra search
-let g:ctrlp_lazy_update = 100
-
-" Do not clear filenames cache, to improve CtrlP startup
-" You can manualy clear it by <F5>
-let g:ctrlp_clear_cache_on_exit = 0
-
-" Set no file limit
-let g:ctrlp_max_files = 0
-
-if executable("ag")
-  let g:ctrlp_user_command = 'ag %s -i --nocolor --nogroup --ignore ''.git'' --ignore ''.DS_Store'' --ignore ''node_modules'' --hidden -g ""'
-  let g:ctrlp_use_caching = 0 " Ag is fast enough to not needing caching
-else
-  let g:ctrlp_user_command = {
-      \ 'types': {
-          \ 1: ['.git', 'cd %s && git ls-files . --cached --exclude-standard --others'],
-          \ 2: ['.hg', 'hg --cwd %s locate -I .'],
-      \ },
-      \ 'fallback': 'find %s -type f'
-  \ }
-endif
-" }}}
-
-" {{{ deoplete options
-let g:deoplete#enable_at_startup = 1
 " }}}
 
 " {{{ vim-closetag options
@@ -336,6 +304,14 @@ if has("autocmd")
   augroup end
 
 endif
+" }}}
+
+" {{{ FZF config
+
+" Show FZF when pressing ctrl-p
+noremap <c-p> :FZF<CR>
+
+
 " }}}
 
 
