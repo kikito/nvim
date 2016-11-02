@@ -200,7 +200,7 @@ set wildignore+=*.swp,*~,._*
 
 " {{{ Matching closing character settings
 set showmatch     " Display matching parent
-set matchtime=3   " Time to display matching parent, in tens of second
+set matchtime=4   " Time to display matching parent, in tens of second
 " }}}
 
 " {{{ Grep settings
@@ -306,6 +306,7 @@ endif
 
 " {{{ Deoplete config
 let g:deoplete#enable_at_startup = 1
+let g:deoplete#auto_complete_delay = 400
 
 " Use tab instead of the default deoplete mapping
 inoremap <expr><tab> pumvisible() ? "\<c-n>" : "\<tab>"
