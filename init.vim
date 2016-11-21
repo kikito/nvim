@@ -315,7 +315,7 @@ inoremap <expr><tab> pumvisible() ? "\<c-n>" : "\<tab>"
 
 " Show FZF when pressing ctrl-p
 noremap <c-p> :FZF<CR>
-
+let $FZF_DEFAULT_COMMAND = 'ag --hidden --ignore .git -g ""'
 
 " }}}
 
