@@ -11,7 +11,8 @@ call plug#begin('~/.config/nvim/plugins')
   Plug 'alvan/vim-closetag'
   Plug 'vim-ruby/vim-ruby'
   Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-  Plug 'junegunn/fzf.vim'
+  Plug 'junegunn/fzf.vim',
+  Plug 'beyondmarc/glsl.vim'
 
   function! DoRemote(arg)
     UpdateRemotePlugins
