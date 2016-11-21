@@ -130,8 +130,6 @@ nmap <leader>w :w!<CR>
 " shift key fixes
 cmap WQ wq
 cmap wQ wq
-cmap Q q
-cmap Tabe tabe
 
 " Split buffer vertically or horizontally: leader v, leader h
 nnoremap <leader>v <C-w>v
@@ -148,15 +146,15 @@ nnoremap <C-K> <C-W>k
 nnoremap <C-L> <C-W>l
 nnoremap <C-H> <C-W>h
 
-" Do not overwrite the clipboard when deleting
-nnoremap d "_d
-vnoremap d "_d
+" Deleting without overriding the default clipboard
+nnoremap <leader>d "_d
+vnoremap <leader>d "_d
 
 " remap space bar to search
 :nmap <Space> /
 
 " deactivate 'Entering Ex mode' prompt
-:map Q <Nop>
+:nnoremap Q <Nop>
 " }}}
 
 " {{{ Folding settings
