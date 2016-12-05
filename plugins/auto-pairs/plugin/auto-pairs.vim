@@ -77,7 +77,7 @@ endif
 " 7.4.849 support <C-G>U to avoid breaking '.'
 " Issue talk: https://github.com/jiangmiao/auto-pairs/issues/3
 " Vim note: https://github.com/vim/vim/releases/tag/v7.4.849
-if v:version >= 704 && has("patch849")
+if v:version > 704 || v:version == 704 && has("patch849")
   let s:Go = "\<C-G>U"
 else
   let s:Go = ""
@@ -261,7 +261,7 @@ function! AutoPairsDelete()
   end
 
 
-  if has_key(b:AutoPairs, prev_char) 
+  if has_key(b:AutoPairs, prev_char)
     let close = b:AutoPairs[prev_char]
     if match(line,'^\s*'.close, col('.')-1) != -1
       " Delete (|___)
@@ -380,27 +380,23 @@ function! AutoPairsReturn()
   let cur_char = line[col('.')-1]
   if has_key(b:AutoPairs, prev_char) && b:AutoPairs[prev_char] == cur_char
     if g:AutoPairsCenterLine && winline() * 3 >= winheight(0) * 2
-      " Use \<BS> instead of \<ESC>cl will cause the placeholder deleted
-      " incorrect. because <C-O>zz won't leave Normal mode.
-      " Use \<DEL> is a bit wierd. the character before cursor need to be deleted.
-      " Adding a space, recentering, and deleting it interferes with default
-      " whitespace-removing behavior when exiting insert mode.
-      let cmd = "\<ESC>zzcc"
+      " Recenter before adding new line to avoid replacing line content
+      let cmd = "zz"
     end
 
     " If equalprg has been set, then avoid call =
     " https://github.com/jiangmiao/auto-pairs/issues/24
     if &equalprg != ''
-      return "\<ESC>O".cmd
+      return "\<ESC>".cmd."O"
     endif
 
     " conflict with javascript and coffee
     " javascript   need   indent new line
     " coffeescript forbid indent new line
     if &filetype == 'coffeescript' || &filetype == 'coffee'
-      return "\<ESC>k==o".cmd
+      return "\<ESC>".cmd."k==o"
     else
-      return "\<ESC>=ko".cmd
+      return "\<ESC>".cmd."=ko"
     endif
   end
   return ''
@@ -504,9 +500,9 @@ function! AutoPairsTryInit()
   " supertab doesn't support <SID>AutoPairsReturn
   " when use <SID>AutoPairsReturn  will cause Duplicated <CR>
   "
-  " and when load after vim-endwise will cause unexpected endwise inserted. 
+  " and when load after vim-endwise will cause unexpected endwise inserted.
   " so always load AutoPairs at last
-  
+
   " Buffer level keys mapping
   " comptible with other plugin
   if g:AutoPairsMapCR
