@@ -41,7 +41,6 @@ set bg=dark
 :highlight NeomakeSign guifg=Yellow guibg=#dc322f gui=bold
 let g:neomake_warning_sign={'text': '⚠', 'texthl': 'NeomakeSign'}
 let g:neomake_error_sign={'text': '✖', 'texthl': 'NeomakeSign'}
-let g:neomake_open_list = 2
 " }}}
 
 " {{{ Misc UI settings
