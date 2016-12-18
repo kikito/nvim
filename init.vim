@@ -3,14 +3,13 @@ call plug#begin('~/.config/nvim/plugins')
   Plug 'arakashic/nvim-colors-solarized'
   Plug 'neomake/neomake'
   Plug 'scrooloose/nerdcommenter'
-  Plug 'vim-airline/vim-airline'
-  Plug 'vim-airline/vim-airline-themes'
   Plug 'tpope/vim-vinegar'
   Plug 'tpope/vim-surround'
   Plug 'jiangmiao/auto-pairs'
   Plug 'alvan/vim-closetag'
   Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
   Plug 'junegunn/fzf.vim',
+  Plug 'itchyny/lightline.vim',
   Plug 'sheerun/vim-polyglot'
 
   function! DoRemote(arg)
@@ -71,30 +70,91 @@ set lazyredraw
 let g:NERDSpaceDelims = 1
 " }}}
 
-" {{{ vim-airline options
-let g:airline_theme = 'solarized'
-let g:airline_detected_modified = 1
-let g:airline_powerline_fonts = 1
-let g:airline_detect_iminsert = 0
-let g:airline#extensions#hunks#non_zero_only = 1
-let g:airline#extensions#tabline#enabled = 1
-let g:airline#extensions#branch#enabled = 1
-let g:airline_mode_map = {
-  \ '__' : '-',
-  \ 'n'  : 'N',
-  \ 'i'  : 'I',
-  \ 'R'  : 'R',
-  \ 'c'  : 'C',
-  \ 'v'  : 'V',
-  \ 'V'  : 'V',
-  \ '' : 'V',
-  \ 's'  : 'S',
-  \ 'S'  : 'S',
-  \ '' : 'S',
-  \ }
-" By default vim only shows the status line after a split. Show it always
+"{{{ lightline options
+" Makes sure the status line is drawn in all buffers, not only the active one
 set laststatus=2
-" }}}
+let g:lightline = {
+      \ 'active': {
+      \   'left': [ [ 'mode', 'paste' ],
+      \             [ 'fugitive', 'filename' ],
+      \             [ 'neomake' ] ]
+      \ },
+      \ 'component_function': {
+      \   'modified': 'LightlineModified',
+      \   'readonly': 'LightlineReadonly',
+      \   'fugitive': 'LightlineFugitive',
+      \   'filename': 'LightlineFilename',
+      \   'fileformat': 'LightlineFileformat',
+      \   'filetype': 'LightlineFiletype',
+      \   'fileencoding': 'LightlineFileencoding',
+      \   'mode': 'LightlineMode',
+      \   'neomake': 'LightlineNeomake'
+      \ },
+      \ 'compopent_type': {
+      \   'neomake': 'error'
+      \ },
+      \ 'separator': { 'left': "\ue0b0", 'right': "\ue0b2" },
+      \ 'subseparator': { 'left': "\ue0b1", 'right': "\ue0b3" }
+      \ }
+function! LightlineModified()
+  return &filetype =~ 'help\|vimfiler\|gundo' ? '' : &modified ? '+' : &modifiable ? '' : '-'
+endfunction
+
+function! LightlineReadonly()
+  return &ft !~? 'help\|vimfiler\|gundo' && &readonly ? "\ue0a2" : ''
+endfunction
+
+function! LightlineFugitive()
+  if &ft !~? 'vimfiler\|gundo' && exists("*fugitive#head")
+    let branch = fugitive#head()
+    return branch !=# '' ? "\ue0a0".branch : ''
+  endif
+  return ''
+endfunction
+
+function LightlineNeomake()
+  if !exists(':Neomake')
+    return ''
+  endif
+  let counts = neomake#statusline#LoclistCounts()
+  let warnings = get(counts, 'W', 0)
+  let errors = get(counts, 'E', 0)
+  if warnings == 0 && errors == 0
+    return ''
+  else
+    let first = ' ['.getloclist(0)[0].lnum.']'
+    if errors == 0
+      return 'W:'.warnings.first
+    else
+      return 'E:'.errors.first
+    endif
+  endif
+endfunction
+
+function! LightlineFilename()
+  return ('' != LightlineReadonly() ? LightlineReadonly() . ' ' : '') .
+       \ ('' != expand('%:t') ? expand('%:t') : '[No Name]') .
+       \ ('' != LightlineModified() ? ' ' . LightlineModified() : '')
+endfunction
+
+function! LightlineFileformat()
+  return winwidth(0) > 70 ? &fileformat : ''
+endfunction
+
+function! LightlineFiletype()
+  return winwidth(0) > 70 ? (&filetype !=# '' ? &filetype : 'no ft') : ''
+endfunction
+
+function! LightlineFileencoding()
+  return winwidth(0) > 70 ? (&fenc !=# '' ? &fenc : &enc) : ''
+endfunction
+
+function! LightlineMode()
+  return winwidth(0) > 60 ? lightline#mode() : ''
+endfunction
+
+"}}}
+
 
 " {{{ vim-closetag options
 let g:closetag_filenames = "*.html,*.html.erb"
