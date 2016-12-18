@@ -9,10 +9,9 @@ call plug#begin('~/.config/nvim/plugins')
   Plug 'tpope/vim-surround'
   Plug 'jiangmiao/auto-pairs'
   Plug 'alvan/vim-closetag'
-  Plug 'vim-ruby/vim-ruby'
   Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
   Plug 'junegunn/fzf.vim',
-  Plug 'beyondmarc/glsl.vim'
+  Plug 'sheerun/vim-polyglot'
 
   function! DoRemote(arg)
     UpdateRemotePlugins
