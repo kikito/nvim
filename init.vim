@@ -133,7 +133,8 @@ endfunction
 
 function! LightlineFilename()
   return ('' != LightlineReadonly() ? LightlineReadonly() . ' ' : '') .
-       \ ('' != expand('%:t') ? expand('%:t') : '[No Name]') .
+       \ (&ft == 'fzf' ? 'FZF' :
+       \  '' != expand('%') ? pathshorten(expand('%')) : '[No Name]') .
        \ ('' != LightlineModified() ? ' ' . LightlineModified() : '')
 endfunction
 
