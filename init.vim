@@ -242,6 +242,7 @@ set listchars+=precedes:❮   " The character in the first column when the line 
 " {{{ Search settings
 set hlsearch    " highlight matches
 set incsearch   " incremental searching
+set inccommand=nosplit " incremental everything
 set ignorecase  " searches are case insensitive...
 set smartcase   " ... unless they contain at least one capital letter
 set gdefault    " by default, replace globally (you can ommit /g at the end of a search-and-replace
