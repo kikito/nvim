@@ -20,8 +20,14 @@ if !exists('g:closetag_filenames')
     let g:closetag_filenames = "*.html,*.xhtml,*.phtml"
 endif
 
+let g:closetag_filenames = substitute(g:closetag_filenames, '\s', '', 'g')
+
 if g:closetag_filenames == ""
     finish
+endif
+
+if !exists('g:closetag_emptyTags_caseSensitive')
+    let g:closetag_emptyTags_caseSensitive = 0
 endif
 
 exec "au BufNewFile,Bufread " . g:closetag_filenames . " inoremap <silent> <buffer> > ><Esc>:call <SID>CloseTagFun()<Cr>"
@@ -85,6 +91,16 @@ fun! s:hasAtt()
             let b:haveAtt = 1
         en
     en
+endf
+
+" TagShouldBeEmpty() should the tag be treated as an non closing) tag?   {{{1
+" check the current tag with the set of tags defined in b:emptyTags 
+" closetag_emptyTags_caseSensitive defines if the check is case sensitive
+fun! s:TagShouldBeEmpty()
+	if g:closetag_emptyTags_caseSensitive == 1
+		return b:tagName =~#  b:emptyTags
+	en
+	return b:tagName =~?  b:emptyTags
 endf
 
 " TagUnderCursor()  Is there a tag under the cursor?               {{{1
@@ -217,7 +233,7 @@ fun! s:CloseTagFun()
     elseif s:TagUnderCursor()
         if b:firstWasEndTag == 0
             exe "silent normal! />\<Cr>"
-            if b:html_mode && b:tagName =~?  b:emptyTags
+            if b:html_mode && s:TagShouldBeEmpty()
                 if b:haveAtt == 0
                     call s:Callback (b:tagName, b:html_mode)
                 en

@@ -1,4 +1,4 @@
-" Copyright (c) 2016 Junegunn Choi
+" Copyright (c) 2017 Junegunn Choi
 "
 " MIT License
 "
@@ -29,7 +29,10 @@ set cpo&vim
 " ------------------------------------------------------------------
 
 let s:layout_keys = ['window', 'up', 'down', 'left', 'right']
-let s:bin = { 'preview': expand('<sfile>:h:h:h').'/bin/preview.rb' }
+let s:bin_dir = expand('<sfile>:h:h:h').'/bin/'
+let s:bin = {
+\ 'preview': s:bin_dir.(executable('ruby') ? 'preview.rb' : 'preview.sh'),
+\ 'tags':    s:bin_dir.'tags.pl' }
 let s:TYPE = {'dict': type({}), 'funcref': type(function('call')), 'string': type('')}
 
 " [[options to wrap], preview window expression, [toggle-preview keys...]]
@@ -53,10 +56,6 @@ function! fzf#vim#with_preview(...)
     endif
     let window = args[0]
     call remove(args, 0)
-  endif
-
-  if !executable('ruby')
-    return options
   endif
 
   let preview = printf(' --preview-window %s --preview "%s"\ %s\ {}',
@@ -113,10 +112,6 @@ function! s:escape(path)
   return escape(a:path, ' $%#''"\')
 endfunction
 
-function! s:q1(str)
-  return "'".substitute(a:str, "'", "'\\\\''", 'g')."'"
-endfunction
-
 if v:version >= 704
   function! s:function(name)
     return function(a:name)
@@ -129,9 +124,12 @@ else
 endif
 
 function! s:get_color(attr, ...)
+  let gui = has('termguicolors') && &termguicolors
+  let fam = gui ? 'gui' : 'cterm'
+  let pat = gui ? '^#[a-f0-9]\+' : '^[0-9]\+$'
   for group in a:000
-    let code = synIDattr(synIDtrans(hlID(group)), a:attr, 'cterm')
-    if code =~ '^[0-9]\+$'
+    let code = synIDattr(synIDtrans(hlID(group)), a:attr, fam)
+    if code =~? pat
       return code
     endif
   endfor
@@ -140,11 +138,19 @@ endfunction
 
 let s:ansi = {'black': 30, 'red': 31, 'green': 32, 'yellow': 33, 'blue': 34, 'magenta': 35, 'cyan': 36}
 
+function! s:csi(color, fg)
+  let prefix = a:fg ? '38;' : '48;'
+  if a:color[0] == '#'
+    return prefix.'2;'.join(map([a:color[1:2], a:color[3:4], a:color[5:6]], 'str2nr(v:val, 16)'), ';')
+  endif
+  return prefix.'5;'.a:color
+endfunction
+
 function! s:ansi(str, group, default, ...)
   let fg = s:get_color('fg', a:group)
   let bg = s:get_color('bg', a:group)
-  let color = (empty(fg) ? s:ansi[a:default] : ('38;5;'.fg)) .
-            \ (empty(bg) ? '' : (';48;5;'.bg))
+  let color = s:csi(empty(fg) ? s:ansi[a:default] : fg, 1) .
+        \ (empty(bg) ? '' : s:csi(bg, 0))
   return printf("\x1b[%s%sm%s\x1b[m", color, a:0 ? ';1' : '', a:str)
 endfunction
 
@@ -156,12 +162,6 @@ endfor
 
 function! s:buflisted()
   return filter(range(1, bufnr('$')), 'buflisted(v:val) && getbufvar(v:val, "&filetype") != "qf"')
-endfunction
-
-function! s:defaults()
-  let rules = copy(get(g:, 'fzf_colors', {}))
-  let colors = join(map(items(filter(map(rules, 'call("s:get_color", v:val)'), '!empty(v:val)')), 'join(v:val, ":")'), ',')
-  return empty(colors) ? '' : ('--color='.colors)
 endfunction
 
 function! s:fzf(name, opts, extra)
@@ -181,7 +181,7 @@ function! s:fzf(name, opts, extra)
 
   let eopts  = has_key(extra, 'options') ? remove(extra, 'options') : ''
   let merged = extend(copy(a:opts), extra)
-  let merged.options = join(filter([s:defaults(), get(merged, 'options', ''), eopts], '!empty(v:val)'))
+  let merged.options = join(filter([get(merged, 'options', ''), eopts], '!empty(v:val)'))
   return fzf#run(s:wrap(a:name, merged, bang))
 endfunction
 
@@ -219,7 +219,7 @@ function! s:warn(message)
   return 0
 endfunction
 
-function! s:uniq(list)
+function! fzf#vim#_uniq(list)
   let visited = {}
   let ret = []
   for l in a:list
@@ -234,6 +234,11 @@ endfunction
 " ------------------------------------------------------------------
 " Files
 " ------------------------------------------------------------------
+function! s:shortpath()
+  let short = pathshorten(fnamemodify(getcwd(), ':~:.'))
+  return empty(short) ? '~/' : short . (short =~ '/$' ? '' : '/')
+endfunction
+
 function! fzf#vim#files(dir, ...)
   let args = {'options': '-m '.get(g:, 'fzf_files_options', '')}
   if !empty(a:dir)
@@ -244,7 +249,7 @@ function! fzf#vim#files(dir, ...)
     let args.dir = dir
     let args.options .= ' --prompt '.shellescape(dir)
   else
-    let args.options .= ' --prompt '.shellescape(pathshorten(getcwd())).'/'
+    let args.options .= ' --prompt '.shellescape(s:shortpath())
   endif
 
   return s:fzf('files', args, a:000)
@@ -356,8 +361,8 @@ endfunction
 " ------------------------------------------------------------------
 function! fzf#vim#colors(...)
   return s:fzf('colors', {
-  \ 'source':  map(split(globpath(&rtp, "colors/*.vim"), "\n"),
-  \               "substitute(fnamemodify(v:val, ':t'), '\\..\\{-}$', '', '')"),
+  \ 'source':  fzf#vim#_uniq(map(split(globpath(&rtp, "colors/*.vim"), "\n"),
+  \               "substitute(fnamemodify(v:val, ':t'), '\\..\\{-}$', '', '')")),
   \ 'sink':    'colo',
   \ 'options': '+m --prompt="Colors> "'
   \}, a:000)
@@ -473,7 +478,7 @@ function! fzf#vim#gitfiles(args, ...)
   let wrapped = fzf#wrap({
   \ 'source':  'git -c color.status=always status --short --untracked-files=all',
   \ 'dir':     root,
-  \ 'options': '--ansi --multi --nth 2..,.. --prompt "GitFiles?> " --preview ''sh -c "(git diff --color=always -- {-1} | sed 1,4d; cat {-1}) | head -500"'''
+  \ 'options': '--ansi --multi --nth 2..,.. --tiebreak=index --prompt "GitFiles?> " --preview ''sh -c "(git diff --color=always -- {-1} | sed 1,4d; cat {-1}) | head -500"'''
   \})
   call s:remove_layout(wrapped)
   let wrapped.common_sink = remove(wrapped, 'sink*')
@@ -546,11 +551,14 @@ endfunction
 
 function! fzf#vim#buffers(...)
   let bufs = map(sort(s:buflisted(), 's:sort_buffers'), 's:format_buffer(v:val)')
+
+  let [query, args] = (a:0 && type(a:1) == type('')) ?
+        \ [a:1, a:000[1:]] : ['', a:000]
   return s:fzf('buffers', {
   \ 'source':  reverse(bufs),
   \ 'sink*':   s:function('s:bufopen'),
-  \ 'options': '+m -x --tiebreak=index --header-lines=1 --ansi -d "\t" -n 2,1..2 --prompt="Buf> "',
-  \}, a:000)
+  \ 'options': '+m -x --tiebreak=index --header-lines=1 --ansi -d "\t" -n 2,1..2 --prompt="Buf> "'.s:q(query)
+  \}, args)
 endfunction
 
 " ------------------------------------------------------------------
@@ -603,7 +611,7 @@ function! fzf#vim#ag(query, ...)
   let query = empty(a:query) ? '^(?=.)' : a:query
   let args = copy(a:000)
   let ag_opts = len(args) > 1 && type(args[0]) == s:TYPE.string ? remove(args, 0) : ''
-  let command = ag_opts . ' ' . s:q1(query)
+  let command = ag_opts . ' ' . shellescape(query)
   return call('fzf#vim#ag_raw', insert(args, command, 0))
 endfunction
 
@@ -685,15 +693,18 @@ function! s:btags_sink(lines)
 endfunction
 
 function! s:q(query)
-  return ' --query '.s:q1(a:query)
+  return ' --query '.shellescape(a:query)
 endfunction
 
 " query, [[tag commands], options]
 function! fzf#vim#buffer_tags(query, ...)
   let args = copy(a:000)
-  let tag_cmds = len(args) > 1 ? remove(args, 0) : [
+  let tag_cmds = (len(args) > 1 && type(args[0]) != type({})) ? remove(args, 0) : [
     \ printf('ctags -f - --sort=no --excmd=number --language-force=%s %s 2>/dev/null', &filetype, expand('%:S')),
     \ printf('ctags -f - --sort=no --excmd=number %s 2>/dev/null', expand('%:S'))]
+  if type(tag_cmds) != type([])
+    let tag_cmds = [tag_cmds]
+  endif
   try
     return s:fzf('btags', {
     \ 'source':  s:btags_source(tag_cmds),
@@ -715,12 +726,15 @@ function! s:tags_sink(lines)
   let qfl = []
   let cmd = get(get(g:, 'fzf_action', s:default_action), a:lines[0], 'e')
   try
-    let [magic, &magic, wrapscan, &wrapscan] = [&magic, 0, &wrapscan, 1]
+    let [magic, &magic, wrapscan, &wrapscan, acd, &acd] = [&magic, 0, &wrapscan, 1, &acd, 0]
     for line in a:lines[1:]
       try
-        let parts = split(line, '\t\zs')
-        let excmd = matchstr(join(parts[2:], ''), '^.*\ze;"\t')
-        call s:open(cmd, parts[1][:-2])
+        let parts   = split(line, '\t\zs')
+        let excmd   = matchstr(join(parts[2:-2], '')[:-2], '^.*\ze;"\t')
+        let base    = fnamemodify(parts[-1], ':h')
+        let relpath = parts[1][:-2]
+        let abspath = relpath =~ '^/' ? relpath : join([base, relpath], '/')
+        call s:open(cmd, abspath)
         execute excmd
         call add(qfl, {'filename': expand('%'), 'lnum': line('.'), 'text': getline('.')})
       catch /^Vim:Interrupt$/
@@ -730,7 +744,7 @@ function! s:tags_sink(lines)
       endtry
     endfor
   finally
-    let [&magic, &wrapscan] = [magic, wrapscan]
+    let [&magic, &wrapscan, &acd] = [magic, wrapscan, acd]
   endtry
   if len(qfl) > 1
     call setqflist(qfl)
@@ -760,21 +774,20 @@ function! fzf#vim#tags(query, ...)
     endif
   endif
 
-  let tagfile = tagfiles()[0]
-  " We don't want to apply --ansi option when tags file is large as it makes
-  " processing much slower.
-  if getfsize(tagfile) > 1024 * 1024 * 20
-    let proc = 'grep -v ''^\!'' '
-    let copt = ''
-  else
-    let proc = 'perl -ne ''unless (/^\!/) { s/^(.*?)\t(.*?)\t/'.s:yellow('\1', 'Function').'\t'.s:blue('\2', 'String').'\t/; print }'' '
-    let copt = '--ansi '
-  endif
+  let tagfiles = tagfiles()
+  let v2_limit = 1024 * 1024 * 200
+  for tagfile in tagfiles
+    let v2_limit -= getfsize(tagfile)
+    if v2_limit < 0
+      break
+    endif
+  endfor
+  let opts = v2_limit < 0 ? '--algo=v1 ' : ''
+
   return s:fzf('tags', {
-  \ 'source':  proc.shellescape(fnamemodify(tagfile, ':t')),
+  \ 'source':  shellescape(s:bin.tags).' '.join(map(tagfiles, 'shellescape(fnamemodify(v:val, ":p"))')),
   \ 'sink*':   s:function('s:tags_sink'),
-  \ 'dir':     fnamemodify(tagfile, ':h'),
-  \ 'options': copt.'-m --tiebreak=begin --prompt "Tags> "'.s:q(a:query)}, a:000)
+  \ 'options': opts.'--nth 1..2 --with-nth ..-2 -m --tiebreak=begin --prompt "Tags> "'.s:q(a:query)}, a:000)
 endfunction
 
 " ------------------------------------------------------------------
@@ -909,7 +922,7 @@ endfunction
 
 function! fzf#vim#helptags(...)
   let sorted = sort(split(globpath(&runtimepath, '**/doc/tags'), '\n'))
-  let tags = exists('*uniq') ? uniq(sorted) : s:uniq(sorted)
+  let tags = exists('*uniq') ? uniq(sorted) : fzf#vim#_uniq(sorted)
 
   return s:fzf('helptags', {
   \ 'source':  "grep -H '.*' ".join(map(tags, 'shellescape(v:val)')).
@@ -1017,7 +1030,7 @@ function! s:commits(buffer_local, args)
   let options = {
   \ 'source':  source,
   \ 'sink*':   s:function('s:commits_sink'),
-  \ 'options': '--ansi --multi --no-sort --tiebreak=index --reverse '.
+  \ 'options': '--ansi --multi --tiebreak=index --reverse '.
   \   '--inline-info --prompt "'.command.'> " --bind=ctrl-s:toggle-sort '.
   \   '--expect='.expect_keys
   \ }
@@ -1081,13 +1094,12 @@ function! fzf#vim#maps(mode, ...)
   let list = []
   let curr = ''
   for line in split(cout, "\n")
-    let src = matchstr(line, 'Last set from \zs.*')
-    if empty(src)
-      let curr = line[3:]
-    else
-      let src = '  '.join(reverse(reverse(split(src, '/'))[0:2]), '/')
+    if line =~ "^\t"
+      let src = '  '.join(reverse(reverse(split(split(line)[-1], '/'))[0:2]), '/')
       call add(list, printf('%s %s', curr, s:green(src, 'Comment')))
       let curr = ''
+    else
+      let curr = line[3:]
     endif
   endfor
   if !empty(curr)

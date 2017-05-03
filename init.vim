@@ -12,10 +12,10 @@ call plug#begin('~/.config/nvim/plugins')
   Plug 'itchyny/lightline.vim',
   Plug 'sheerun/vim-polyglot'
 
-  function! DoRemote(arg)
-    UpdateRemotePlugins
-  endfunction
-  Plug 'Shougo/deoplete.nvim', { 'do': function('DoRemote') }
+  " function! DoRemote(arg)
+    " UpdateRemotePlugins
+  " endfunction
+  " Plug 'Shougo/deoplete.nvim', { 'do': function('DoRemote') }
 call plug#end()
 " }}}
 
@@ -37,8 +37,8 @@ set bg=dark
 
 " {{{ Neomake options
 :highlight NeomakeSign guifg=Yellow guibg=#dc322f gui=bold
-let g:neomake_warning_sign={'text': '⚠', 'texthl': 'NeomakeSign'}
-let g:neomake_error_sign={'text': '✖', 'texthl': 'NeomakeSign'}
+let g:neomake_warning_sign={'text': '•', 'texthl': 'NeomakeSign'}
+let g:neomake_error_sign={'text': '!', 'texthl': 'NeomakeSign'}
 " }}}
 
 " {{{ Misc UI settings
@@ -212,7 +212,10 @@ nnoremap <leader>d "_d
 vnoremap <leader>d "_d
 
 " remap space bar to search
-:nmap <Space> /
+:nnoremap <Space> /\v
+
+" Makes search using regexes require less \s
+:nnoremap <leader>s :%s/\v
 
 " deactivate 'Entering Ex mode' prompt
 :nnoremap Q <Nop>
@@ -242,7 +245,7 @@ set listchars+=precedes:❮   " The character in the first column when the line 
 " {{{ Search settings
 set hlsearch    " highlight matches
 set incsearch   " incremental searching
-set inccommand=nosplit " incremental everything
+set inccommand= " incremental everything
 set ignorecase  " searches are case insensitive...
 set smartcase   " ... unless they contain at least one capital letter
 set gdefault    " by default, replace globally (you can ommit /g at the end of a search-and-replace
@@ -375,11 +378,17 @@ inoremap <expr><tab> pumvisible() ? "\<c-n>" : "\<tab>"
 " }}}
 
 " {{{ FZF config
+set rtp+=/usr/local/opt/fzf
 
 " Show FZF when pressing ctrl-p
 noremap <c-p> :FZF<CR>
 let $FZF_DEFAULT_COMMAND = 'ag --hidden --ignore .git -g ""'
-
 " }}}
 
+" {{{ Vim-surround-related stuff
+
+nnoremap <leader>' cs"'
+nnoremap <leader>" cs'"
+
+" }}}
 
