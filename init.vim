@@ -12,6 +12,7 @@ call plug#begin('~/.config/nvim/plugins')
   Plug 'itchyny/lightline.vim',
   Plug 'sheerun/vim-polyglot'
   Plug 'editorconfig/editorconfig-vim'
+  Plug 'tbastos/vim-lua'
 
   " function! DoRemote(arg)
     " UpdateRemotePlugins
