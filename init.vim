@@ -232,9 +232,13 @@ vnoremap <leader>d "_d
 " }}}
 
 " {{{ Folding settings
-set nofoldenable      " disable folding (folding slows down vim in ruby, go)
+set foldmethod=syntax " Use syntax fold
 set foldlevel=99      " Folds are open by default
 set foldlevelstart=99 " Folds are open by default (new way)
+let ruby_fold=0
+let go_fold=0
+let lua_fold=1
+let javascript_fold=1
 " }}}
 
 " {{{ Whitespace settings
