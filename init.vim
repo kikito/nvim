@@ -124,19 +124,28 @@ function LightlineNeomake()
   if warnings == 0 && errors == 0
     return ''
   else
-    let first = ' ['.getloclist(0)[0].lnum.']'
-    if errors == 0
-      return 'W:'.warnings.first
-    else
-      return 'E:'.errors.first
+    let loclist = getloclist(0)
+    if len(loclist) > 0
+      let first = ' ['.loclist[0].lnum.']'
+      if errors == 0
+        return 'W:'.warnings.first
+      else
+        return 'E:'.errors.first
+      endif
     endif
   endif
 endfunction
 
 function! LightlineFilename()
+  let filename = expand('%')
+  if len(filename) > 0
+    let filename = len(filename) < winwidth(0) - 25 ? filename : pathshorten(filename)
+  else
+    let filename = '[No Name]'
+  endif
+
   return ('' != LightlineReadonly() ? LightlineReadonly() . ' ' : '') .
-       \ (&ft == 'fzf' ? 'FZF' :
-       \  '' != expand('%') ? pathshorten(expand('%')) : '[No Name]') .
+       \ (&ft == 'fzf' ? 'FZF' : filename) .
        \ ('' != LightlineModified() ? ' ' . LightlineModified() : '')
 endfunction
 
@@ -157,7 +166,6 @@ function! LightlineMode()
 endfunction
 
 "}}}
-
 
 " {{{ vim-closetag options
 let g:closetag_filenames = "*.html,*.html.erb"
