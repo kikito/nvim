@@ -407,9 +407,12 @@ endfunction
 " Colors
 " ------------------------------------------------------------------
 function! fzf#vim#colors(...)
+  let colors = split(globpath(&rtp, "colors/*.vim"), "\n")
+  if has('packages')
+    let colors += split(globpath(&packpath, "pack/*/opt/*/colors/*.vim"), "\n")
+  endif
   return s:fzf('colors', {
-  \ 'source':  fzf#vim#_uniq(map(split(globpath(&rtp, "colors/*.vim"), "\n"),
-  \               "substitute(fnamemodify(v:val, ':t'), '\\..\\{-}$', '', '')")),
+  \ 'source':  fzf#vim#_uniq(map(colors, "substitute(fnamemodify(v:val, ':t'), '\\..\\{-}$', '', '')")),
   \ 'sink':    'colo',
   \ 'options': '+m --prompt="Colors> "'
   \}, a:000)
@@ -1070,7 +1073,7 @@ function! s:commits(buffer_local, args)
     return s:warn('Not in git repository')
   endif
 
-  let source = 'git log '.get(g:, 'fzf_commits_log_options', '--graph --color=always '.fzf#shellescape('--format=%C(auto)%h%d %s %C(green)%cr'))
+  let source = 'git log '.get(g:, 'fzf_commits_log_options', '--color=always '.fzf#shellescape('--format=%C(auto)%h%d %s %C(green)%cr'))
   let current = expand('%')
   let managed = 0
   if !empty(current)
@@ -1083,6 +1086,8 @@ function! s:commits(buffer_local, args)
       return s:warn('The current buffer is not in the working tree')
     endif
     let source .= ' --follow '.fzf#shellescape(current)
+  else
+    let source .= ' --graph'
   endif
 
   let command = a:buffer_local ? 'BCommits' : 'Commits'
