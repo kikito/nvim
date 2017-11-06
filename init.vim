@@ -47,6 +47,9 @@ let g:neomake_error_sign={'text': '!', 'texthl': 'NeomakeSign'}
 set encoding=utf-8
 scriptencoding utf-8
 
+" Enable mouse in console mode
+set mouse=a
+
 " Be a bit faster when executing command-line shell stuff
 set noshelltemp
 
