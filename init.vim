@@ -5,14 +5,14 @@ call plug#begin('~/.config/nvim/plugins')
   Plug 'scrooloose/nerdcommenter'
   Plug 'tpope/vim-vinegar'
   Plug 'tpope/vim-surround'
-  Plug 'jiangmiao/auto-pairs'
+  Plug 'vim-scripts/auto-pairs-gentle'
   Plug 'alvan/vim-closetag'
   Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
   Plug 'junegunn/fzf.vim',
   Plug 'itchyny/lightline.vim',
   Plug 'sheerun/vim-polyglot'
   Plug 'editorconfig/editorconfig-vim'
-  Plug 'tbastos/vim-lua'
+  Plug 'drmingdrmer/vim-indent-lua'
 
   " function! DoRemote(arg)
     " UpdateRemotePlugins
@@ -41,6 +41,11 @@ set bg=dark
 :highlight NeomakeSign guifg=Yellow guibg=#dc322f gui=bold
 let g:neomake_warning_sign={'text': '•', 'texthl': 'NeomakeSign'}
 let g:neomake_error_sign={'text': '!', 'texthl': 'NeomakeSign'}
+" }}}
+
+" {{{ Auto-pairs-gentle options
+let g:AutoPairsFlyMode = 0
+let g:AutoPairsMultilineClose=0 " don't auto-jump to other lines to close a bracket
 " }}}
 
 " {{{ Misc UI settings
