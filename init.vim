@@ -5,7 +5,7 @@ call plug#begin('~/.config/nvim/plugins')
   Plug 'scrooloose/nerdcommenter'
   Plug 'tpope/vim-vinegar'
   Plug 'tpope/vim-surround'
-  Plug 'vim-scripts/auto-pairs-gentle'
+  Plug 'jiangmiao/auto-pairs'
   Plug 'alvan/vim-closetag'
   Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
   Plug 'junegunn/fzf.vim',
@@ -43,8 +43,8 @@ let g:neomake_warning_sign={'text': '•', 'texthl': 'NeomakeSign'}
 let g:neomake_error_sign={'text': '!', 'texthl': 'NeomakeSign'}
 " }}}
 
-" {{{ Auto-pairs-gentle options
-let g:AutoPairsFlyMode = 0
+" {{{ Auto-pairs options
+let g:AutoPairsFlyMode=0
 let g:AutoPairsMultilineClose=0 " don't auto-jump to other lines to close a bracket
 " }}}
 
