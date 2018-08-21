@@ -12,6 +12,7 @@ call plug#begin('~/.config/nvim/plugins')
   Plug 'sheerun/vim-polyglot'
   Plug 'editorconfig/editorconfig-vim'
   Plug 'tbastos/vim-lua'
+  Plug 'rust-lang/rust.vim'
   Plug 'Townk/vim-autoclose'
 
   " function! DoRemote(arg)
