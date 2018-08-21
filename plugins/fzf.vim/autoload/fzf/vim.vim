@@ -37,12 +37,14 @@ let s:bin = {
 let s:TYPE = {'dict': type({}), 'funcref': type(function('call')), 'string': type(''), 'list': type([])}
 if s:is_win
   if has('nvim')
-    let s:bin.preview = split(system('for %A in ("'.s:bin.preview.'") do echo %~sA'), "\n")[1]
+    let s:bin.preview = split(system('for %A in ("'.s:bin.preview.'") do @echo %~sA'), "\n")[0]
   else
     let s:bin.preview = fnamemodify(s:bin.preview, ':8')
   endif
   let s:bin.preview = (executable('ruby') ? 'ruby' : 'bash').' '.escape(s:bin.preview, '\')
 endif
+
+let s:wide = 120
 
 function! s:extend_opts(dict, eopts, prepend)
   if empty(a:eopts)
@@ -95,7 +97,7 @@ function! fzf#vim#with_preview(...)
     call remove(args, 0)
   endif
 
-  let preview = ['--preview-window', window, '--preview', s:bin.preview.' '.(window =~ 'up\|down' ? '-v' : '').' {}']
+  let preview = ['--preview-window', window, '--preview', (s:is_win ? s:bin.preview : fzf#shellescape(s:bin.preview)).' {}']
 
   if len(args)
     call extend(preview, ['--bind', join(map(args, 'v:val.":toggle-preview"'), ',')])
@@ -111,11 +113,6 @@ function! s:remove_layout(opts)
     endif
   endfor
   return a:opts
-endfunction
-
-" Deprecated: use fzf#wrap instead
-function! fzf#vim#wrap(opts)
-  return fzf#wrap(a:opts)
 endfunction
 
 function! s:wrap(name, opts, bang)
@@ -144,7 +141,8 @@ function! s:chomp(str)
 endfunction
 
 function! s:escape(path)
-  return escape(a:path, ' $%#''"\')
+  let path = fnameescape(a:path)
+  return s:is_win ? escape(path, '$') : path
 endfunction
 
 if v:version >= 704
@@ -326,7 +324,7 @@ function! fzf#vim#_lines(all)
   let rest = []
   let buf = bufnr('')
   let longest_name = 0
-  let display_bufnames = &columns > 100
+  let display_bufnames = &columns > s:wide
   if display_bufnames
     let bufnames = {}
     for b in s:buflisted()
@@ -367,7 +365,7 @@ function! fzf#vim#lines(...)
   return s:fzf('lines', {
   \ 'source':  lines,
   \ 'sink*':   s:function('s:line_handler'),
-  \ 'options': '+m --tiebreak=index --prompt "Lines> " --ansi --extended --nth='.nth.'.. --reverse --tabstop=1'.s:q(query)
+  \ 'options': ['+m', '--tiebreak=index', '--prompt', 'Lines> ', '--ansi', '--extended', '--nth='.nth.'..', '--layout=reverse-list', '--tabstop=1', '--query', query]
   \}, args)
 endfunction
 
@@ -399,7 +397,7 @@ function! fzf#vim#buffer_lines(...)
   return s:fzf('blines', {
   \ 'source':  s:buffer_lines(),
   \ 'sink*':   s:function('s:buffer_line_handler'),
-  \ 'options': '+m --tiebreak=index --prompt "BLines> " --ansi --extended --nth=2.. --reverse --tabstop=1'.s:q(query)
+  \ 'options': ['+m', '--tiebreak=index', '--prompt', 'BLines> ', '--ansi', '--extended', '--nth=2..', '--layout=reverse-list', '--tabstop=1', '--query', query]
   \}, args)
 endfunction
 
@@ -435,7 +433,7 @@ function! s:all_files()
   return fzf#vim#_uniq(map(
     \ filter([expand('%')], 'len(v:val)')
     \   + filter(map(s:buflisted_sorted(), 'bufname(v:val)'), 'len(v:val)')
-    \   + filter(copy(v:oldfiles), "filereadable(expand(v:val))"),
+    \   + filter(copy(v:oldfiles), "filereadable(fnamemodify(v:val, ':p'))"),
     \ 'fnamemodify(v:val, ":~:.")'))
 endfunction
 
@@ -448,12 +446,15 @@ function! s:history_source(type)
 endfunction
 
 nnoremap <plug>(-fzf-vim-do) :execute g:__fzf_command<cr>
+nnoremap <plug>(-fzf-/) /
+nnoremap <plug>(-fzf-:) :
 
 function! s:history_sink(type, lines)
   if len(a:lines) < 2
     return
   endif
 
+  let prefix = "\<plug>(-fzf-".a:type.')'
   let key  = a:lines[0]
   let item = matchstr(a:lines[1], ' *[0-9]\+ *\zs.*')
   if key == 'ctrl-e'
@@ -461,7 +462,10 @@ function! s:history_sink(type, lines)
     redraw
     call feedkeys(a:type."\<up>")
   else
-    let g:__fzf_command = "normal ".a:type.item."\<cr>"
+    if a:type == ':'
+      call histadd(a:type, item)
+    endif
+    let g:__fzf_command = "normal ".prefix.item."\<cr>"
     call feedkeys("\<plug>(-fzf-vim-do)")
   endif
 endfunction
@@ -511,7 +515,7 @@ function! fzf#vim#gitfiles(args, ...)
   endif
   if a:args != '?'
     return s:fzf('gfiles', {
-    \ 'source':  'git ls-files '.a:args,
+    \ 'source':  'git ls-files '.a:args.(s:is_win ? '' : ' | uniq'),
     \ 'dir':     root,
     \ 'options': '-m --prompt "GitFiles> "'
     \}, a:000)
@@ -579,7 +583,7 @@ endfunction
 
 function! s:format_buffer(b)
   let name = bufname(a:b)
-  let name = empty(name) ? '[No Name]' : fnamemodify(name, ":~:.")
+  let name = empty(name) ? '[No Name]' : fnamemodify(name, ":p:~:.")
   let flag = a:b == bufnr('')  ? s:blue('%', 'Conditional') :
           \ (a:b == bufnr('#') ? s:magenta('#', 'Special') : ' ')
   let modified = getbufvar(a:b, '&modified') ? s:red(' [+]', 'Exception') : ''
@@ -604,7 +608,7 @@ function! fzf#vim#buffers(...)
   return s:fzf('buffers', {
   \ 'source':  map(s:buflisted_sorted(), 's:format_buffer(v:val)'),
   \ 'sink*':   s:function('s:bufopen'),
-  \ 'options': '+m -x --tiebreak=index --header-lines=1 --ansi -d "\t" -n 2,1..2 --prompt="Buf> "'.s:q(query)
+  \ 'options': ['+m', '-x', '--tiebreak=index', '--header-lines=1', '--ansi', '-d', '\t', '-n', '2,1..2', '--prompt', 'Buf> ', '--query', query]
   \}, args)
 endfunction
 
@@ -741,18 +745,15 @@ function! s:btags_sink(lines)
   normal! zz
 endfunction
 
-function! s:q(query)
-  return ' --query '.fzf#shellescape(a:query)
-endfunction
-
 " query, [[tag commands], options]
 function! fzf#vim#buffer_tags(query, ...)
   let args = copy(a:000)
   let escaped = fzf#shellescape(expand('%'))
   let null = s:is_win ? 'nul' : '/dev/null'
+  let sort = has('unix') && !has('win32unix') && executable('sort') ? '| sort -s -k 5' : ''
   let tag_cmds = (len(args) > 1 && type(args[0]) != type({})) ? remove(args, 0) : [
-    \ printf('ctags -f - --sort=no --excmd=number --language-force=%s %s 2> %s', &filetype, escaped, null),
-    \ printf('ctags -f - --sort=no --excmd=number %s 2> %s', escaped, null)]
+    \ printf('ctags -f - --sort=yes --excmd=number --language-force=%s %s 2> %s %s', &filetype, escaped, null, sort),
+    \ printf('ctags -f - --sort=yes --excmd=number %s 2> %s %s', escaped, null, sort)]
   if type(tag_cmds) != type([])
     let tag_cmds = [tag_cmds]
   endif
@@ -760,7 +761,7 @@ function! fzf#vim#buffer_tags(query, ...)
     return s:fzf('btags', {
     \ 'source':  s:btags_source(tag_cmds),
     \ 'sink*':   s:function('s:btags_sink'),
-    \ 'options': '--reverse -m -d "\t" --with-nth 1,4.. -n 1 --prompt "BTags> "'.s:q(a:query)}, args)
+    \ 'options': ['--layout=reverse-list', '-m', '-d', '\t', '--with-nth', '1,4..', '-n', '1', '--prompt', 'BTags> ', '--query', a:query]}, args)
   catch
     return s:warn(v:exception)
   endtry
@@ -781,7 +782,7 @@ function! s:tags_sink(lines)
     for line in a:lines[1:]
       try
         let parts   = split(line, '\t\zs')
-        let excmd   = matchstr(join(parts[2:-2], '')[:-2], '^.*\ze;"\t')
+        let excmd   = matchstr(join(parts[2:-2], '')[:-2], '^.\{-}\ze;\?"\t')
         let base    = fnamemodify(parts[-1], ':h')
         let relpath = parts[1][:-2]
         let abspath = relpath =~ (s:is_win ? '^[A-Z]:\' : '^/') ? relpath : join([base, relpath], '/')
@@ -836,12 +837,12 @@ function! fzf#vim#tags(query, ...)
       break
     endif
   endfor
-  let opts = v2_limit < 0 ? '--algo=v1 ' : ''
+  let opts = v2_limit < 0 ? ['--algo=v1'] : []
 
   return s:fzf('tags', {
-  \ 'source':  fzf#shellescape(s:bin.tags).' '.join(map(tagfiles, 'fzf#shellescape(fnamemodify(v:val, ":p"))')),
+  \ 'source':  'perl '.fzf#shellescape(s:bin.tags).' '.join(map(tagfiles, 'fzf#shellescape(fnamemodify(v:val, ":p"))')),
   \ 'sink*':   s:function('s:tags_sink'),
-  \ 'options': opts.'--nth 1..2 -m --tiebreak=begin --prompt "Tags> "'.s:q(a:query)}, a:000)
+  \ 'options': extend(opts, ['--nth', '1..2', '-m', '--tiebreak=begin', '--prompt', 'Tags> ', '--query', a:query])}, a:000)
 endfunction
 
 " ------------------------------------------------------------------
@@ -978,7 +979,7 @@ function! fzf#vim#helptags(...)
   if !executable('grep') || !executable('perl')
     return s:warn('Helptags command requires grep and perl')
   endif
-  let sorted = sort(split(globpath(&runtimepath, 'doc/tags'), '\n'))
+  let sorted = sort(split(globpath(&runtimepath, 'doc/tags', 1), '\n'))
   let tags = exists('*uniq') ? uniq(sorted) : fzf#vim#_uniq(sorted)
 
   if exists('s:helptags_script')
@@ -1042,16 +1043,29 @@ endfunction
 " ------------------------------------------------------------------
 " Commits / BCommits
 " ------------------------------------------------------------------
+function! s:yank_to_register(data)
+  let @" = a:data
+  silent! let @* = a:data
+  silent! let @+ = a:data
+endfunction
+
 function! s:commits_sink(lines)
   if len(a:lines) < 2
     return
   endif
 
+  let pat = '[0-9a-f]\{7,9}'
+
+  if a:lines[0] == 'ctrl-y'
+    let hashes = join(filter(map(a:lines[1:], 'matchstr(v:val, pat)'), 'len(v:val)'))
+    return s:yank_to_register(hashes)
+  end
+
   let diff = a:lines[0] == 'ctrl-d'
   let cmd = s:action_for(a:lines[0], 'e')
   let buf = bufnr('')
   for idx in range(1, len(a:lines) - 1)
-    let sha = matchstr(a:lines[idx], '[0-9a-f]\{7,9}')
+    let sha = matchstr(a:lines[idx], pat)
     if !empty(sha)
       if diff
         if idx > 1
@@ -1061,7 +1075,7 @@ function! s:commits_sink(lines)
       else
         " Since fugitive buffers are unlisted, we can't keep using 'e'
         let c = (cmd == 'e' && idx > 1) ? 'tab split' : cmd
-        execute c 'fugitive://'.s:git_root.'/.git//'.sha
+        execute c FugitiveGenerate(sha)
       endif
     endif
   endfor
@@ -1095,10 +1109,10 @@ function! s:commits(buffer_local, args)
   let options = {
   \ 'source':  source,
   \ 'sink*':   s:function('s:commits_sink'),
-  \ 'options': ['--ansi', '--multi', '--tiebreak=index', '--reverse',
+  \ 'options': ['--ansi', '--multi', '--tiebreak=index', '--layout=reverse-list',
   \   '--inline-info', '--prompt', command.'> ', '--bind=ctrl-s:toggle-sort',
-  \   '--header', ':: Press '.s:magenta('CTRL-S', 'Special').' to toggle sort',
-  \   '--expect='.expect_keys]
+  \   '--header', ':: Press '.s:magenta('CTRL-S', 'Special').' to toggle sort, '.s:magenta('CTRL-Y', 'Special').' to yank commit hashes',
+  \   '--expect=ctrl-y,'.expect_keys]
   \ }
 
   if a:buffer_local
@@ -1106,9 +1120,9 @@ function! s:commits(buffer_local, args)
     let options.options[-1] .= ',ctrl-d'
   endif
 
-  if !s:is_win
+  if !s:is_win && &columns > s:wide
     call extend(options.options,
-    \ ['--preview', 'grep -o "[a-f0-9]\{7,\}" <<< {} | xargs git show --format=format: --color=always | head -200'])
+    \ ['--preview', 'echo {} | grep -o "[a-f0-9]\{7,\}" | head -1 | xargs git show --format=format: --color=always | head -200'])
   endif
 
   return s:fzf(a:buffer_local ? 'bcommits' : 'commits', options, a:args)

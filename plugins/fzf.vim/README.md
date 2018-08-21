@@ -27,15 +27,18 @@ is small, which is the case for many of the commands provided here.
 Nevertheless I wrote them anyway since it's really easy to implement custom
 selector with fzf.
 
-fzf is an independent command-line program and thus requires an external
-terminal emulator when on GVim. You may or may not like the experience. Also
-note that Windows support is experimental at the moment.
-
 Installation
 ------------
 
-Use [vim-plug](https://github.com/junegunn/vim-plug) or any Vim plugin
-manager of your choice.
+fzf.vim depends on the basic Vim plugin of [the main fzf
+repository][fzf-main], which means you need to **set up both "fzf" and
+"fzf.vim" on Vim**. To learn more about fzf/Vim integration, see
+[README-VIM][README-VIM].
+
+[fzf-main]: https://github.com/junegunn/fzf
+[README-VIM]: https://github.com/junegunn/fzf/blob/master/README-VIM.md
+
+### Using [vim-plug](https://github.com/junegunn/vim-plug)
 
 If you already installed fzf using [Homebrew](https://brew.sh/), the following
 should suffice:
@@ -169,7 +172,9 @@ You can use autoload functions to define your own commands.
 " Command for git grep
 " - fzf#vim#grep(command, with_column, [options], [fullscreen])
 command! -bang -nargs=* GGrep
-  \ call fzf#vim#grep('git grep --line-number '.shellescape(<q-args>), 0, <bang>0)
+  \ call fzf#vim#grep(
+  \   'git grep --line-number '.shellescape(<q-args>), 0,
+  \   { 'dir': systemlist('git rev-parse --show-toplevel')[0] }, <bang>0)
 
 " Override Colors command. You can safely do this in your .vimrc as fzf.vim
 " will not override existing commands.
@@ -194,7 +199,7 @@ command! -bang -nargs=* Ag
 " Similarly, we can apply it to fzf#vim#grep. To use ripgrep instead of ag:
 command! -bang -nargs=* Rg
   \ call fzf#vim#grep(
-  \   'rg --column --line-number --no-heading --color=always '.shellescape(<q-args>), 1,
+  \   'rg --column --line-number --no-heading --color=always --smart-case '.shellescape(<q-args>), 1,
   \   <bang>0 ? fzf#vim#with_preview('up:60%')
   \           : fzf#vim#with_preview('right:50%:hidden', '?'),
   \   <bang>0)
@@ -240,13 +245,13 @@ inoremap <expr> <c-x><c-k> fzf#vim#complete#word({'left': '15%'})
 
 ### Completion helper
 
-`fzf#complete` is a helper function for creating custom fuzzy completion using
-fzf. If the first parameter is a command string or a Vim list, it will be used
-as the source.
+`fzf#vim#complete` is a helper function for creating custom fuzzy completion
+using fzf. If the first parameter is a command string or a Vim list, it will
+be used as the source.
 
 ```vim
 " Replace the default dictionary completion with fzf-based fuzzy completion
-inoremap <expr> <c-x><c-k> fzf#complete('cat /usr/share/dict/words')
+inoremap <expr> <c-x><c-k> fzf#vim#complete('cat /usr/share/dict/words')
 ```
 
 For advanced uses, you can pass an options dictionary to the function. The set
@@ -262,6 +267,15 @@ following exceptions:
   completion prefix as the argument and return the final value
 - `sink` or `sink*` are ignored
 
+```vim
+" Global line completion (not just open buffers. ripgrep required.)
+inoremap <expr> <c-x><c-l> fzf#vim#complete(fzf#wrap({
+  \ 'prefix': '^.*$',
+  \ 'source': 'rg -n ^ --color always',
+  \ 'options': '--ansi --delimiter : --nth 3..',
+  \ 'reducer': { lines -> join(split(lines[0], ':\zs')[2:], '') }}))
+```
+
 #### Reducer example
 
 ```vim
@@ -269,15 +283,30 @@ function! s:make_sentence(lines)
   return substitute(join(a:lines), '^.', '\=toupper(submatch(0))', '').'.'
 endfunction
 
-inoremap <expr> <c-x><c-s> fzf#complete({
+inoremap <expr> <c-x><c-s> fzf#vim#complete({
   \ 'source':  'cat /usr/share/dict/words',
   \ 'reducer': function('<sid>make_sentence'),
   \ 'options': '--multi --reverse --margin 15%,0',
   \ 'left':    20})
 ```
 
-Status line (neovim)
---------------------
+Status line of terminal buffer
+------------------------------
+
+When fzf starts in a terminal buffer (see [fzf/README-VIM.md][termbuf]), you
+may want to customize the statusline of the containing buffer.
+
+[termbuf]: https://github.com/junegunn/fzf/blob/master/README-VIM.md#fzf-inside-terminal-buffer
+
+### Hide statusline
+
+```vim
+autocmd! FileType fzf
+autocmd  FileType fzf set laststatus=0 noshowmode noruler
+  \| autocmd BufLeave <buffer> set laststatus=2 showmode ruler
+```
+
+### Custom statusline
 
 ```vim
 function! s:fzf_statusline()
