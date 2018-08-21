@@ -5,7 +5,6 @@ call plug#begin('~/.config/nvim/plugins')
   Plug 'scrooloose/nerdcommenter'
   Plug 'tpope/vim-vinegar'
   Plug 'tpope/vim-surround'
-  Plug 'jiangmiao/auto-pairs'
   Plug 'alvan/vim-closetag'
   Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
   Plug 'junegunn/fzf.vim',
@@ -13,6 +12,7 @@ call plug#begin('~/.config/nvim/plugins')
   Plug 'sheerun/vim-polyglot'
   Plug 'editorconfig/editorconfig-vim'
   Plug 'drmingdrmer/vim-indent-lua'
+  Plug 'Townk/vim-autoclose'
 
   " function! DoRemote(arg)
     " UpdateRemotePlugins
@@ -43,10 +43,6 @@ let g:neomake_warning_sign={'text': '•', 'texthl': 'NeomakeSign'}
 let g:neomake_error_sign={'text': '!', 'texthl': 'NeomakeSign'}
 " }}}
 
-" {{{ Auto-pairs options
-let g:AutoPairsFlyMode=0
-let g:AutoPairsMultilineClose=0 " don't auto-jump to other lines to close a bracket
-" }}}
 
 " {{{ Misc UI settings
 set encoding=utf-8
