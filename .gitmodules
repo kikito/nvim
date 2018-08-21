@@ -1,0 +1,9 @@
+[submodule "plugins/rust.vim"]
+	path = plugins/rust.vim
+	url = https://github.com/rust-lang/rust.vim
+[submodule "plugins/vim-autoclose"]
+	path = plugins/vim-autoclose
+	url = https://github.com/Townk/vim-autoclose.git
+[submodule "plugins/vim-lua"]
+	path = plugins/vim-lua
+	url = https://github.com/tbastos/vim-lua
