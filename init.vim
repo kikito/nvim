@@ -11,7 +11,7 @@ call plug#begin('~/.config/nvim/plugins')
   Plug 'itchyny/lightline.vim',
   Plug 'sheerun/vim-polyglot'
   Plug 'editorconfig/editorconfig-vim'
-  Plug 'drmingdrmer/vim-indent-lua'
+  Plug 'tbastos/vim-lua'
   Plug 'Townk/vim-autoclose'
 
   " function! DoRemote(arg)
