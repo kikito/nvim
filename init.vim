@@ -36,6 +36,9 @@ set showbreak=↪
 colorscheme solarized
 set background=dark
 set bg=dark
+" Make syntax errors in SCREAM
+" (otherwise a missing comma in JSON is bold red vs regular red - not visible)
+:highlight Error term=reverse cterm=bold ctermfg=7 ctermbg=1 guifg=White guibg=Red
 " }}}
 
 " {{{ Neomake options
