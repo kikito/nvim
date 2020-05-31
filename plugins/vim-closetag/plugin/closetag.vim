@@ -6,7 +6,7 @@
 "
 " }}}
 "
-if exists("g:loaded_closetag") | fini | en | let g:loaded_closetag = "1.8.5"
+if exists("g:loaded_closetag") | fini | en | let g:loaded_closetag = "1.8.11"
 
 fun! s:Initial()
     call s:Declare('g:closetag_filetypes', 'html,xhtml,phtml')
@@ -20,6 +20,10 @@ fun! s:Initial()
 
     call s:Declare('g:closetag_emptyTags_caseSensitive', 0)
 
+    call s:Declare('g:closetag_regions', {
+        \ 'typescript.tsx': 'jsxRegion,tsxRegion',
+        \ 'javascript.jsx': 'jsxRegion',
+        \ })
 
     let g:closetag_filenames = substitute(g:closetag_filenames, '\s*,\s\+', ',', 'g')
     let g:closetag_xhtml_filenames = substitute(g:closetag_xhtml_filenames, '\s*,\s\+', ',', 'g')
@@ -27,13 +31,13 @@ fun! s:Initial()
     let g:closetag_xhtml_filetypes = substitute(g:closetag_xhtml_filetypes, '\s*,\s\+', ',', 'g')
 
     if g:closetag_shortcut != ''
-        exec "au User vim-closetag inoremap <silent> <buffer> " . g:closetag_shortcut . " ><Esc>:call <SID>Closure()<Cr>"
+        exec "au User vim-closetag inoremap <silent> <buffer> " . g:closetag_shortcut . " ><Esc>:call <SID>CloseIt()<Cr>"
 
         if g:closetag_filetypes != ''
-            exec "au FileType " . g:closetag_filetypes . " inoremap <silent> <buffer> " . g:closetag_shortcut . " ><Esc>:call <SID>Closure()<Cr>"
+            exec "au FileType " . g:closetag_filetypes . " inoremap <silent> <buffer> " . g:closetag_shortcut . " ><Esc>:call <SID>CloseIt()<Cr>"
         en
         if g:closetag_filenames != ''
-            exec "au BufNewFile,Bufread " . g:closetag_filenames . " inoremap <silent> <buffer> " . g:closetag_shortcut . " ><Esc>:call <SID>Closure()<Cr>"
+            exec "au BufNewFile,Bufread " . g:closetag_filenames . " inoremap <silent> <buffer> " . g:closetag_shortcut . " ><Esc>:call <SID>CloseIt()<Cr>"
         en
     en
 
@@ -155,24 +159,9 @@ fun! s:FindTag()
     " en
 
     if getline('.')[col('.') - 1] == '>'
-        if getline('.')[col('.')-2] == '/'
-            "we don't work with empty tags
-            retu l:haveTag
-        en
-        if getline('.')[col('.')-2] == '%'
-            "we don't work with jsp %> tags
-            retu l:haveTag
-        en
-        if getline('.')[col('.')-2] == '?'
-            "we don't work with php ?> tags
-            retu l:haveTag
-        en
-        if getline('.')[col('.')-2] == '='
-            "we don't work with operator =>
-            retu l:haveTag
-        en
-        if getline('.')[col('.')-2] == '-'
-            "we don't work with operator ->
+        " we don't work with:
+        " blank string, empty tags, jsp %> tags, php ?> tags, operator =>, operator ->
+        if index([' ', '/', '%', '?', '=', '-'], getline('.')[col('.')-2]) >= 0
             retu l:haveTag
         en
     el
@@ -226,13 +215,34 @@ fun! s:FindTag()
     retu l:haveTag
 endf
 
-fun! s:Closure()
+fun! s:InValidRegion()
+    let l:regions = get(g:closetag_regions, &filetype, '')
+    if l:regions == ''
+        " no restrictions? no problem
+        return 1
+    en
+
+    " make sure we're in a valid region type
+    let l:regionStack = synstack(line('.'), col('.'))
+    for id in l:regionStack
+        let l:regionName = synIDattr(id, "name")
+        if stridx(l:regions, l:regionName) != -1
+            retu 1
+        en
+    endfor
+
+    " not in a valid region; cancel
+    retu 0
+endf
+
+fun! s:CloseIt()
     if !exists("b:did_ftplugin_closetag")
         call s:InitBuf()
     en
 
-    if !exists("b:closetag_disabled") || !b:closetag_disabled
+    if !(exists("b:closetag_disabled") && b:closetag_disabled) && s:InValidRegion()
         let l:restore = s:SavePos()
+
         let l:endOfLine = ((col('.')+1) == col('$'))
         if col('.') > 1 && getline('.')[col('.')-2] == '>'
             let l:line = line('.')
