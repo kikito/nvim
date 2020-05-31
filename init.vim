@@ -25,18 +25,22 @@ call plug#end()
 
 " {{{ colorscheme/style options
 syntax enable
+set nocp " not compatible with old vi
+set backspace=indent,eol,start " normal backspace behaviour
 let $NVIM_TUI_ENABLE_TRUE_COLOR=1 " forces true color
 let $NVIM_TUI_ENABLE_CURSOR_SHAPE=1 " Changes cursor to a line on insert mode
 set termguicolors " Enables truecolor in neovim >= 0.1.5
 set number        " Displays line numbers
-set novisualbell
-set errorbells
+set novisualbell  " No bell
+set errorbells    " Really, no bell
+set t_vb=         " Also, no bell
 set scrolloff=3   " Show 3 extra lines when scrolling up/down
 set cursorline    " Highlight the line where the cursor is
 set showbreak=↪
 colorscheme solarized
 set background=dark
 set bg=dark
+set showcmd " show incomplete commands
 " Make syntax errors in SCREAM
 " (otherwise a missing comma in JSON is bold red vs regular red - not visible)
 :highlight Error term=reverse cterm=bold ctermfg=7 ctermbg=1 guifg=White guibg=Red
@@ -66,7 +70,7 @@ set hidden
 set shortmess=atI
 
 " Allows copy-pasting from other apps
-set clipboard=unnamed
+set clipboard^=unnamed
 
 " Add some space around the cursor when moving it near the borders of the screen
 set sidescrolloff=1
@@ -182,7 +186,10 @@ let g:closetag_filenames = "*.html,*.html.erb"
 
 " {{{ Key Settings
 
-let g:mapleader=","              " set the <leader> key to comma
+" set the <leader> key to \ (this is the default)
+let g:mapleader="\\"
+" map space to \ so space becomes the "de facto" leader key
+map <Space> \
 
 " Map ESC to jk
 imap jk <ESC>
@@ -230,11 +237,8 @@ nnoremap <C-H> <C-W>h
 nnoremap <leader>d "_d
 vnoremap <leader>d "_d
 
-" remap space bar to search
-:nnoremap <Space> /\v
-
-" Makes search using regexes require less \s
-:nnoremap <leader>s :%s/\v
+" Search text with leader-f
+:nnoremap <leader>f /\v
 
 " deactivate 'Entering Ex mode' prompt
 :nnoremap Q <Nop>
@@ -253,6 +257,8 @@ let javascript_fold=1
 " {{{ Whitespace settings
 set nowrap                          " don't wrap lines
 set tabstop=2                       " a tab is two spaces
+set autoindent
+set smartindent
 set shiftwidth=2                    " an autoindent (with <<) is two spaces
 set expandtab                       " use spaces, not tabs
 set backspace=indent,eol,start      " backspace through everything in insert mode
