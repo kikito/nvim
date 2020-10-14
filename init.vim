@@ -186,11 +186,6 @@ let g:closetag_filenames = "*.html,*.html.erb"
 
 " {{{ Key Settings
 
-" set the <leader> key to \ (this is the default)
-let g:mapleader="\\"
-" map space to \ so space becomes the "de facto" leader key
-map <Space> \
-
 " Map ESC to jk
 imap jk <ESC>
 imap Jk <ESC>
@@ -210,20 +205,23 @@ nnoremap L l
 vnoremap < <gv
 vnoremap > >gv
 
-" comma q quits and saves, comma w saves without warnings
-nmap <leader>q :q!<CR>
-nmap <leader>w :w!<CR>
+" ctrl q quits and saves, ctrl w saves without warnings
+nnoremap <C-q> :q!<CR>
+nnoremap <C-w> :w!<CR>
+nnoremap <C-s> :w<CR>
+nnoremap <C-x> c<CR>
+nnoremap <C-v> p<CR>
 
 " shift key fixes
 cmap WQ wq
 cmap wQ wq
 
-" Split buffer vertically or horizontally: leader v, leader h
-nnoremap <leader>v <C-w>v
-nnoremap <leader>h <C-w>s
+" Split buffer horizontally (ctrl t) and vertically (ctrl g)
+nnoremap <C-g> <C-w>s
+nnoremap <C-t> <C-w>v
 set splitbelow splitright
 
-" Move between splits with leader-direction instead of c-w direction
+" Move between splits with ctrl-direction instead of c-w + direction
 nnoremap <C-j> <C-W>j
 nnoremap <C-k> <C-W>k
 nnoremap <C-l> <C-W>l
@@ -233,12 +231,11 @@ nnoremap <C-K> <C-W>k
 nnoremap <C-L> <C-W>l
 nnoremap <C-H> <C-W>h
 
-" Deleting without overriding the default clipboard
-nnoremap <leader>d "_d
-vnoremap <leader>d "_d
+" Search text with ctrl-f
+:nnoremap <C-f> /\v
 
-" Search text with leader-f
-:nnoremap <leader>f /\v
+" Save with ctrl-s
+:nnoremap <C-s> :w<CR>
 
 " deactivate 'Entering Ex mode' prompt
 :nnoremap Q <Nop>
@@ -413,11 +410,3 @@ set rtp+=/usr/local/opt/fzf
 noremap <c-p> :FZF<CR>
 let $FZF_DEFAULT_COMMAND = 'ag --hidden --ignore .git -g ""'
 " }}}
-
-" {{{ Vim-surround-related stuff
-
-nnoremap <leader>' cs"'
-nnoremap <leader>" cs'"
-
-" }}}
-
