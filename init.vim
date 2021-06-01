@@ -209,12 +209,11 @@ nnoremap L l
 vnoremap < <gv
 vnoremap > >gv
 
-" ctrl q quits and saves, ctrl w saves without warnings
+" ctrl q quits and saves, ctrl s saves, ctrl w saves without warnings
 nnoremap <C-q> :q!<CR>
 nnoremap <C-w> :w!<CR>
 nnoremap <C-s> :w<CR>
 nnoremap <C-x> c<CR>
-nnoremap <C-v> p<CR>
 
 " shift key fixes
 cmap WQ wq
@@ -237,9 +236,6 @@ nnoremap <C-H> <C-W>h
 
 " Search text with ctrl-f
 :nnoremap <C-f> /\v
-
-" Save with ctrl-s
-:nnoremap <C-s> :w<CR>
 
 " deactivate 'Entering Ex mode' prompt
 :nnoremap Q <Nop>
