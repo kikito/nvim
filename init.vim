@@ -12,7 +12,6 @@ call plug#begin('~/.config/nvim/plugins')
   Plug 'sheerun/vim-polyglot'
   Plug 'editorconfig/editorconfig-vim'
   Plug 'rust-lang/rust.vim'
-  Plug 'vim-syntastic/syntastic'
   Plug 'wagnerf42/vim-clippy'
   Plug 'Townk/vim-autoclose'
 
@@ -45,10 +44,6 @@ set showcmd " show incomplete commands
 " (otherwise a missing comma in JSON is bold red vs regular red - not visible)
 :highlight Error term=reverse cterm=bold ctermfg=7 ctermbg=1 guifg=White guibg=Red
 
-" }}}
-
-" {{{ syntastic options
-let g:syntastic_rust_checkers = ['rustc', 'clippy']
 " }}}
 
 " {{{ rust.vim options
