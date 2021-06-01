@@ -14,6 +14,10 @@ call plug#begin('~/.config/nvim/plugins')
   Plug 'rust-lang/rust.vim'
   Plug 'wagnerf42/vim-clippy'
   Plug 'Townk/vim-autoclose'
+  " Teal language support
+  Plug 'teal-language/vim-teal'
+  Plug 'dense-analysis/ale', { 'for': 'teal' }
+  Plug 'tpope/vim-endwise', { 'for': 'teal' }
 
   " function! DoRemote(arg)
     " UpdateRemotePlugins
