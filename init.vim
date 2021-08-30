@@ -19,10 +19,6 @@ call plug#begin('~/.config/nvim/plugins')
   Plug 'dense-analysis/ale', { 'for': 'teal' }
   Plug 'tpope/vim-endwise', { 'for': 'teal' }
 
-  " function! DoRemote(arg)
-    " UpdateRemotePlugins
-  " endfunction
-  " Plug 'Shougo/deoplete.nvim', { 'do': function('DoRemote') }
   Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " Recommended updating the parsers on update
   Plug 'neovim/nvim-lspconfig'
   Plug 'hrsh7th/nvim-compe'
