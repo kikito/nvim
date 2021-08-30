@@ -1,6 +1,7 @@
 " {{{ Plugins
 call plug#begin('~/.config/nvim/plugins')
-  Plug 'arakashic/nvim-colors-solarized'
+  Plug 'ishan9299/nvim-solarized-lua'
+  Plug 'kyazdani42/nvim-web-devicons'
   Plug 'neomake/neomake'
   Plug 'scrooloose/nerdcommenter'
   Plug 'tpope/vim-vinegar'
@@ -23,6 +24,9 @@ call plug#begin('~/.config/nvim/plugins')
     " UpdateRemotePlugins
   " endfunction
   " Plug 'Shougo/deoplete.nvim', { 'do': function('DoRemote') }
+  Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " Recommended updating the parsers on update
+  Plug 'neovim/nvim-lspconfig'
+  Plug 'hrsh7th/nvim-compe'
 call plug#end()
 " }}}
 
@@ -48,6 +52,42 @@ set showcmd " show incomplete commands
 " (otherwise a missing comma in JSON is bold red vs regular red - not visible)
 :highlight Error term=reverse cterm=bold ctermfg=7 ctermbg=1 guifg=White guibg=Red
 
+" {{{ nvim-web-devicons
+lua << EOF
+require'nvim-web-devicons'.setup {
+  default = true;
+}
+EOF
+" }}}
+
+" {{{ nvim-compe
+set completeopt=menuone,noselect
+
+let g:compe = {}
+let g:compe.enabled = v:true
+let g:compe.autocomplete = v:true
+let g:compe.debug = v:false
+let g:compe.min_length = 1
+let g:compe.preselect = 'enable'
+let g:compe.throttle_time = 80
+let g:compe.source_timeout = 200
+let g:compe.incomplete_delay = 400
+let g:compe.max_abbr_width = 100
+let g:compe.max_kind_width = 100
+let g:compe.max_menu_width = 100
+let g:compe.documentation = v:true
+
+let g:compe.source = {}
+let g:compe.source.path = v:true
+let g:compe.source.buffer = v:true
+let g:compe.source.calc = v:true
+let g:compe.source.nvim_lsp = v:true
+let g:compe.source.nvim_lua = v:true
+let g:compe.source.vsnip = v:true
+let g:compe.source.ultisnips = v:true
+
+inoremap <silent><expr> <C-Space> compe#complete()
+inoremap <silent><expr> <CR>      compe#confirm('<CR>')
 " }}}
 
 " {{{ rust.vim options
@@ -58,6 +98,11 @@ let g:rustfmt_autosave = 1
 :highlight NeomakeSign guifg=Yellow guibg=#dc322f gui=bold
 let g:neomake_warning_sign={'text': '•', 'texthl': 'NeomakeSign'}
 let g:neomake_error_sign={'text': '!', 'texthl': 'NeomakeSign'}
+" }}}
+
+" {{{ vim-autoclose
+" Don't interfere with vim-compte
+let g:AutoClosePumvisible = {"ENTER": "<C-Y>", "ESC": "<ESC>"}
 " }}}
 
 
@@ -86,6 +131,8 @@ set sidescrolloff=1
 " Redraw the screen a bit less (helps when editing ruby files)
 set lazyredraw
 
+" Set space as the Leader key
+let mapleader=" " " map leader to Space
 " }}}
 
 
@@ -246,7 +293,8 @@ nnoremap <C-H> <C-W>h
 " }}}
 
 " {{{ Folding settings
-set foldmethod=syntax " Use syntax fold
+set foldmethod=expr
+set foldexpr=nvim_treesitter#foldexpr()
 set foldlevel=99      " Folds are open by default
 set foldlevelstart=99 " Folds are open by default (new way)
 let ruby_fold=0
