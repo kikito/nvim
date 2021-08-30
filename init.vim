@@ -10,7 +10,6 @@ call plug#begin('~/.config/nvim/plugins')
   Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
   Plug 'junegunn/fzf.vim',
   Plug 'itchyny/lightline.vim',
-  Plug 'sheerun/vim-polyglot'
   Plug 'editorconfig/editorconfig-vim'
   Plug 'rust-lang/rust.vim'
   Plug 'wagnerf42/vim-clippy'
