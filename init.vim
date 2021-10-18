@@ -239,6 +239,7 @@ let g:closetag_filenames = "*.html,*.html.erb"
 
 " {{{ Key Settings
 
+
 " Map ESC to jk
 imap jk <ESC>
 imap Jk <ESC>
@@ -289,6 +290,12 @@ nnoremap <C-H> <C-W>h
 " deactivate 'Entering Ex mode' prompt
 :nnoremap Q <Nop>
 " }}}
+
+" Insert date in ISO format with Control+z
+" The uppercase P on the next line inserts 2021-09-29**before the current character**,
+" allowing insertions at the beginning of an existing line
+:nnoremap <C-z> "=strftime("%Y-%m-%d")<CR>P
+:inoremap <C-z> <C-R>=strftime("%Y-%m-%d")<CR>
 
 " {{{ Folding settings
 set foldmethod=expr
