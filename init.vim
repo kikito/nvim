@@ -14,6 +14,8 @@ call plug#begin('~/.config/nvim/plugins')
   Plug 'rust-lang/rust.vim'
   Plug 'wagnerf42/vim-clippy'
   Plug 'Townk/vim-autoclose'
+  Plug 'vitalk/vim-shebang'
+
   " Teal language support
   Plug 'teal-language/vim-teal'
   Plug 'dense-analysis/ale', { 'for': 'teal' }
@@ -98,6 +100,11 @@ let g:neomake_error_sign={'text': '!', 'texthl': 'NeomakeSign'}
 " {{{ vim-autoclose
 " Don't interfere with vim-compte
 let g:AutoClosePumvisible = {"ENTER": "<C-Y>", "ESC": "<ESC>"}
+" }}}
+
+" {{{ vim-shebang
+" Highlight resty scripts as Lua
+AddShebangPattern! lua ^#!.*/bin/env\s\+resty\>
 " }}}
 
 
