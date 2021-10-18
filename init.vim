@@ -23,7 +23,9 @@ call plug#begin('~/.config/nvim/plugins')
 
   Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " Recommended updating the parsers on update
   Plug 'neovim/nvim-lspconfig'
-  Plug 'hrsh7th/nvim-compe'
+  Plug 'hrsh7th/cmp-nvim-lsp'
+  Plug 'hrsh7th/cmp-buffer'
+  Plug 'hrsh7th/nvim-cmp'
 call plug#end()
 " }}}
 
@@ -57,34 +59,28 @@ require'nvim-web-devicons'.setup {
 EOF
 " }}}
 
-" {{{ nvim-compe
-set completeopt=menuone,noselect
+" {{{ nvim-cmp
+set completeopt=menu,menuone,noselect
 
-let g:compe = {}
-let g:compe.enabled = v:true
-let g:compe.autocomplete = v:true
-let g:compe.debug = v:false
-let g:compe.min_length = 1
-let g:compe.preselect = 'enable'
-let g:compe.throttle_time = 80
-let g:compe.source_timeout = 200
-let g:compe.incomplete_delay = 400
-let g:compe.max_abbr_width = 100
-let g:compe.max_kind_width = 100
-let g:compe.max_menu_width = 100
-let g:compe.documentation = v:true
+lua <<EOF
+  -- Setup nvim-cmp.
+  local cmp = require'cmp'
 
-let g:compe.source = {}
-let g:compe.source.path = v:true
-let g:compe.source.buffer = v:true
-let g:compe.source.calc = v:true
-let g:compe.source.nvim_lsp = v:true
-let g:compe.source.nvim_lua = v:true
-let g:compe.source.vsnip = v:true
-let g:compe.source.ultisnips = v:true
+  cmp.setup({
+    mapping = {
+      ['<C-d>'] = cmp.mapping.scroll_docs(-4),
+      ['<C-f>'] = cmp.mapping.scroll_docs(4),
+      ['<C-Space>'] = cmp.mapping.complete(),
+      ['<C-e>'] = cmp.mapping.close(),
+      ['<CR>'] = cmp.mapping.confirm({ select = true }),
+    },
+    sources = {
+      { name = 'nvim_lsp' },
+      { name = 'buffer' },
+    }
+  })
+EOF
 
-inoremap <silent><expr> <C-Space> compe#complete()
-inoremap <silent><expr> <CR>      compe#confirm('<CR>')
 " }}}
 
 " {{{ rust.vim options
