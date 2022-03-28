@@ -13,6 +13,7 @@ call plug#begin('~/.config/nvim/plugins')
   Plug 'rust-lang/rust.vim'
   Plug 'wagnerf42/vim-clippy'
   Plug 'vitalk/vim-shebang'
+  Plug 'kikito/PICO-8.vim'
 
   " Teal language support
   Plug 'teal-language/vim-teal'
@@ -94,6 +95,10 @@ let g:neomake_error_sign={'text': '!', 'texthl': 'NeomakeSign'}
 " {{{ vim-shebang
 " Highlight resty scripts as Lua
 AddShebangPattern! lua ^#!.*/bin/env\s\+resty\>
+" }}}
+
+" {{{ Pico-8
+let g:pico8_config={'pico8_path': '/Applications/PICO-8.app/Contents/MacOS/pico8'}
 " }}}
 
 
