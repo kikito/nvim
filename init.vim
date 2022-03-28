@@ -6,20 +6,17 @@ call plug#begin('~/.config/nvim/plugins')
   Plug 'scrooloose/nerdcommenter'
   Plug 'tpope/vim-vinegar'
   Plug 'tpope/vim-surround'
-  Plug 'alvan/vim-closetag'
   Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
   Plug 'junegunn/fzf.vim',
   Plug 'itchyny/lightline.vim',
   Plug 'editorconfig/editorconfig-vim'
   Plug 'rust-lang/rust.vim'
   Plug 'wagnerf42/vim-clippy'
-  Plug 'Townk/vim-autoclose'
   Plug 'vitalk/vim-shebang'
 
   " Teal language support
   Plug 'teal-language/vim-teal'
   Plug 'dense-analysis/ale', { 'for': 'teal' }
-  Plug 'tpope/vim-endwise', { 'for': 'teal' }
 
   Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " Recommended updating the parsers on update
   Plug 'neovim/nvim-lspconfig'
@@ -93,10 +90,6 @@ let g:neomake_warning_sign={'text': '•', 'texthl': 'NeomakeSign'}
 let g:neomake_error_sign={'text': '!', 'texthl': 'NeomakeSign'}
 " }}}
 
-" {{{ vim-autoclose
-" Don't interfere with vim-compte
-let g:AutoClosePumvisible = {"ENTER": "<C-Y>", "ESC": "<ESC>"}
-" }}}
 
 " {{{ vim-shebang
 " Highlight resty scripts as Lua
