@@ -13,6 +13,7 @@ call plug#begin('~/.config/nvim/plugins')
   Plug 'rust-lang/rust.vim'
   Plug 'wagnerf42/vim-clippy'
   Plug 'vitalk/vim-shebang'
+  Plug 'preservim/vim-markdown'
   Plug 'kikito/PICO-8.vim'
 
   " Teal language support
